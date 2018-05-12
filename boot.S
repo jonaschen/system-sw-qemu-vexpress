@@ -29,6 +29,7 @@ reset_handler:
 	/* set stack pointer, jump to main */
 	ldr	r0, =_estack
 	mov	sp, r0
+
 	b	main
 
 
