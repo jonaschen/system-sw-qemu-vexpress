@@ -1,6 +1,8 @@
 #include <stdint.h>
 
 #include "reg.h"
+#include "asm.h"
+#include "processor.h"
 
 
 int puts(const char *str)
@@ -59,11 +61,35 @@ static int exec_env_init(void)
 void usertask(void)
 {
 	puts("User Task #1\n");
+
+	puts("I'm going to return to kernel mode\n");
+	syscall();
+
+	puts("Hello, I am back\n");
+	puts("Let's go to return to kernel mode again\n");
+	syscall();
+
+
 	while (1); /* Never terminate the task */
 }
 
-void initialize_stack(unsigned int *stack, void (*task)(void))
+
+struct task_cb {
+	unsigned int	*stack;
+};
+
+#define STACK_DEPTH	256
+#define STACK_BOUND	16
+unsigned int usertask_stack[STACK_DEPTH];
+struct task_cb tcb1;
+
+void initialize_stack(struct task_cb *tcb, void (*task)(void))
 {
+	unsigned int *stack = tcb->stack;
+	/*
+	 * Initialization of process stack.
+	 * r0-r12, lr, cpsr
+	 */
 	stack[0] = 0x0000; /* TODO: passing argument */
 	stack[1] = 0x0101;
 	stack[2] = 0x0202;
@@ -77,31 +103,32 @@ void initialize_stack(unsigned int *stack, void (*task)(void))
 	stack[10] = 0x0a0a;
 	stack[11] = 0x0b0b;
 	stack[12] = 0x0c0c;
-	stack[13] = (unsigned int) &usertask;
-	stack[14] = 0x0000001F;
+	stack[13] = (unsigned int) task;
+	stack[14] = USER_MODE;
 }
-
-void activate(unsigned int *stack);
 
 void main(void)
 {
-	/* Initialization of process stack.
-	 * r0-r12, cpsr, lr
-	 * TODO: task control block
-	 */
-	unsigned int usertask_stack[256];
-	unsigned int *usertask_stack_start = usertask_stack + 256 - 16;
-
-	initialize_stack(usertask_stack_start, usertask);
-
 	if (exec_env_init()) {
 		puts("env init fail\n");
 		goto idle;
 	}
 
+	/* TODO: allocate stack memory */
+	tcb1.stack = usertask_stack + STACK_DEPTH - STACK_BOUND;
+	initialize_stack(&tcb1, usertask);
+
 	puts("Hello, Jonas.\n");
-	activate(usertask_stack_start);
+
+	puts("Kernel: user task 1st round\n");
+	tcb1.stack = activate(tcb1.stack);
+	puts("Kernel: Control back\n");
+
+	puts("Kernel: user task 2nd round\n");
+	tcb1.stack = activate(tcb1.stack);
+	puts("Kernel: Control back\n");
 
 idle:
+	puts("Kernel: Idle loop\n");
 	while (1);
 }

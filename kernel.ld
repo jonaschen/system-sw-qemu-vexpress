@@ -4,6 +4,8 @@ MEMORY
 	RAM2 	(RX) : ORIGIN = 0x70000000, LENGTH = 0x10000000
 }
 
+PROVIDE(__vector_base = 0x70000000);
+
 SECTIONS
 {
 	.text :

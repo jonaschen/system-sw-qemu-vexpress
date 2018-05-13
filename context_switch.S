@@ -1,11 +1,10 @@
-.equ	USER_MODE, 16
-.equ	SYSTEM_MODE, 31
+#include "processor.h"
 
 .global activate
 
 activate:
 	/* TODO: save correct kernel state - svc mode now */
-	push 	{r0-r12, lr}
+	push 	{r4-r12, lr}
 
 	/* switch to process stack */
 	cps	#SYSTEM_MODE
@@ -15,4 +14,4 @@ activate:
 	pop 	{r0-r12}
 
 	/* jump to user task, pop lr and cpsr from stack */
-	rfe	sp!
+	rfeia	sp!

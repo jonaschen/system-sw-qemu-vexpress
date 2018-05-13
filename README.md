@@ -6,6 +6,18 @@ I have been studing jserv's tutorial materials and code samples for a while.
 To express my thankfulness, I am trying to give some feedback 
 and sharing of my experience.
 
+# Next
+---------
+a. Multitasking
+
+b. ARM's Generic Timer
+
+c. ARM's Generic Interrupt Controller
+
+d. System tick & Preemptive
+
+e. Enable cache & MMU
+
 
 Licensing
 ---------

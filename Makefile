@@ -17,7 +17,7 @@ CFLAGS = -Wall -fno-common -O0 -g \
 	 -march=armv7ve
 
 
-OBJS = boot.o context_switch.o
+OBJS = vector.o context_switch.o syscall.o
 OBJS += main.o
 
 all: $(IMAGE)
