@@ -16,15 +16,17 @@ CFLAGS = -Wall -fno-common -O0 -g \
 	 -ffreestanding \
 	 -march=armv7ve
 
-OBJS = main.o
+
+OBJS = boot.o context_switch.o
+OBJS += main.o
 
 all: $(IMAGE)
 
-boot.o: boot.S
-	$(CC) -c boot.S -o boot.o
+%.o : %.S
+	$(CC) -c $(CFLAGS) $< -o $@
 
-$(IMAGE): kernel.ld boot.o $(OBJS)
-	$(LD) boot.o $(OBJS) -T kernel.ld -o $(IMAGE)
+$(IMAGE): kernel.ld $(OBJS)
+	$(LD) $(OBJS) -T kernel.ld -o $(IMAGE)
 	$(OBJDUMP) -d kernel.elf > kernel.list
 
 qemu: $(IMAGE)
@@ -34,6 +36,9 @@ qemu: $(IMAGE)
 			-m 1024M \
 			-nographic \
 			-kernel $(IMAGE)
+#debug: -S -s
+#arm-none-eabi-gdb
+#(gdb) target remote localhost:1234
 
 clean:
 	rm -f $(IMAGE) *.o *.list

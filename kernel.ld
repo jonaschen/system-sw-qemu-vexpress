@@ -1,4 +1,3 @@
-ENTRY(reset_handler)
 MEMORY
 {
 	RAM 	(RWX) : ORIGIN = 0x60000000, LENGTH = 0x10000000

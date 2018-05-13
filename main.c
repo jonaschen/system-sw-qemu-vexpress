@@ -56,14 +56,51 @@ static int exec_env_init(void)
 	return 0;
 }
 
+void usertask(void)
+{
+	puts("User Task #1\n");
+	while (1); /* Never terminate the task */
+}
+
+void initialize_stack(unsigned int *stack, void (*task)(void))
+{
+	stack[0] = 0x0000; /* TODO: passing argument */
+	stack[1] = 0x0101;
+	stack[2] = 0x0202;
+	stack[3] = 0x0303;
+	stack[4] = 0x0404;
+	stack[5] = 0x0505;
+	stack[6] = 0x0606;
+	stack[7] = 0x0707;
+	stack[8] = 0x0808;
+	stack[9] = 0x0909;
+	stack[10] = 0x0a0a;
+	stack[11] = 0x0b0b;
+	stack[12] = 0x0c0c;
+	stack[13] = (unsigned int) &usertask;
+	stack[14] = 0x0000001F;
+}
+
+void activate(unsigned int *stack);
+
 void main(void)
 {
+	/* Initialization of process stack.
+	 * r0-r12, cpsr, lr
+	 * TODO: task control block
+	 */
+	unsigned int usertask_stack[256];
+	unsigned int *usertask_stack_start = usertask_stack + 256 - 16;
+
+	initialize_stack(usertask_stack_start, usertask);
+
 	if (exec_env_init()) {
 		puts("env init fail\n");
 		goto idle;
 	}
 
 	puts("Hello, Jonas.\n");
+	activate(usertask_stack_start);
 
 idle:
 	while (1);
