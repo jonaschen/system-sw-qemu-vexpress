@@ -69,10 +69,23 @@ void usertask(void)
 	puts("Let's go to return to kernel mode again\n");
 	syscall();
 
-
-	while (1); /* Never terminate the task */
+	/* Never terminate the task */
+	while (1){
+		puts("Task #1 alive\n");
+		syscall();
+	}
 }
 
+void usertask2(void)
+{
+	puts("User Task #2\n");
+
+	/* Never terminate the task */
+	while (1){
+		puts("Task #2 alive\n");
+		syscall();
+	}
+}
 
 struct task_cb {
 	unsigned int	*stack;
@@ -82,6 +95,9 @@ struct task_cb {
 #define STACK_BOUND	16
 unsigned int usertask_stack[STACK_DEPTH];
 struct task_cb tcb1;
+
+unsigned int usertask_stack2[STACK_DEPTH];
+struct task_cb tcb2;
 
 void initialize_stack(struct task_cb *tcb, void (*task)(void))
 {
@@ -118,6 +134,9 @@ void main(void)
 	tcb1.stack = usertask_stack + STACK_DEPTH - STACK_BOUND;
 	initialize_stack(&tcb1, usertask);
 
+	tcb2.stack = usertask_stack2 + STACK_DEPTH - STACK_BOUND;
+	initialize_stack(&tcb2, usertask2);
+
 	puts("Hello, Jonas.\n");
 
 	puts("Kernel: user task 1st round\n");
@@ -127,6 +146,14 @@ void main(void)
 	puts("Kernel: user task 2nd round\n");
 	tcb1.stack = activate(tcb1.stack);
 	puts("Kernel: Control back\n");
+
+	while (1) {
+		puts("Kernel: Task switch to task #1\n");
+		tcb1.stack = activate(tcb1.stack);
+
+		puts("Kernel: Task switch to task #1\n");
+		tcb2.stack = activate(tcb2.stack);
+	}
 
 idle:
 	puts("Kernel: Idle loop\n");

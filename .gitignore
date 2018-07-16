@@ -1,3 +1,4 @@
 *.elf
 *.o
 *.list
+*.swp
