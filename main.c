@@ -3,6 +3,7 @@
 #include "reg.h"
 #include "asm.h"
 #include "processor.h"
+#include "sp804_timer.h"
 
 
 int puts(const char *str)
@@ -72,6 +73,7 @@ void usertask(void)
 	/* Never terminate the task */
 	while (1){
 		puts("Task #1 alive\n");
+		timer_delay_awhile(0x100000);
 		syscall();
 	}
 }
@@ -83,6 +85,8 @@ void usertask2(void)
 	/* Never terminate the task */
 	while (1){
 		puts("Task #2 alive\n");
+		timer_delay_awhile(0x200000);
+
 		syscall();
 	}
 }
@@ -151,7 +155,7 @@ void main(void)
 		puts("Kernel: Task switch to task #1\n");
 		tcb1.stack = activate(tcb1.stack);
 
-		puts("Kernel: Task switch to task #1\n");
+		puts("Kernel: Task switch to task #2\n");
 		tcb2.stack = activate(tcb2.stack);
 	}
 

@@ -10,7 +10,10 @@ and sharing of my experience.
 ---------
 a. Multitasking
 
-b. ARM's Generic Timer
+b. ARM's Generic Timer (Cortex-A9 doesn't have generic timer)
+
+	ARM Dual-Timer Module (SP804) Technical Reference Manual
+	http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.ddi0271d/index.html
 
 c. ARM's Generic Interrupt Controller
 

@@ -18,7 +18,7 @@ CFLAGS = -Wall -fno-common -O0 -g \
 
 
 OBJS = vector.o context_switch.o syscall.o
-OBJS += main.o
+OBJS += main.o sp804_timer.o
 
 all: $(IMAGE)
 
@@ -36,6 +36,7 @@ qemu: $(IMAGE)
 			-m 1024M \
 			-nographic \
 			-kernel $(IMAGE)
+
 #debug: -S -s
 #arm-none-eabi-gdb
 #(gdb) target remote localhost:1234
