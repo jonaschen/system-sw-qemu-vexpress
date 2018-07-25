@@ -46,7 +46,7 @@ svc_handler:
 	 */
 	srsdb	sp!, #SYSTEM_MODE
 	cps	#SYSTEM_MODE
-	push	{r0-r12}
+	push	{r0-r12, lr}
 
 	/* pass the stack pointer to OS through r0*/
 	mov	r0, sp

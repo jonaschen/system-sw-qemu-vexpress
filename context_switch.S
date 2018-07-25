@@ -11,7 +11,7 @@ activate:
 
 	/* load user state */
 	mov 	sp, r0
-	pop 	{r0-r12}
+	pop 	{r0-r12, lr}
 
 	/* jump to user task, pop lr and cpsr from stack */
 	rfeia	sp!

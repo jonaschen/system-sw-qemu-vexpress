@@ -123,8 +123,9 @@ void initialize_stack(struct task_cb *tcb, void (*task)(void))
 	stack[10] = 0x0a0a;
 	stack[11] = 0x0b0b;
 	stack[12] = 0x0c0c;
-	stack[13] = (unsigned int) task;
-	stack[14] = USER_MODE;
+	stack[13] = 0x0d0d;
+	stack[14] = (unsigned int) task;
+	stack[15] = USER_MODE;
 }
 
 void main(void)
