@@ -3,17 +3,20 @@
 
 #define TIMER_ENABLE		(0x1 << 7)
 #define TIMER_PERIODIC_MODE	(0x1 << 6)
+#define TIMER_INT_ENABLE	(0x1 << 5)
 
 void timer_delay_awhile(uint32_t delay)
 {
+	uint32_t value;
 
 	/* disable timer */
-	*TIMER_1_CONTROL = 0;
+	write_reg(0, TIMER_1_CONTROL);
 
-	*TIMER_1_LOAD = delay;
+	write_reg(delay, TIMER_1_LOAD);
 
 	/* enable timer */
-	*TIMER_1_CONTROL = (TIMER_ENABLE | TIMER_PERIODIC_MODE);
+	value = (TIMER_ENABLE | TIMER_PERIODIC_MODE | TIMER_INT_ENABLE);
+	write_reg(value, TIMER_1_CONTROL);
 
-	while (*TIMER_1_VALUE != 0);
+	while (read_reg(TIMER_1_VALUE) != 0);
 }
