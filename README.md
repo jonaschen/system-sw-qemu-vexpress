@@ -16,10 +16,8 @@ b. ARM's Generic Timer (Cortex-A9 doesn't have generic timer)
 	http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.ddi0271d/index.html
 
 c. ARM's Generic Interrupt Controller
+
    c-1. Trigger timer interrupt and enter irq mode (commit: fb0be96)
-   c-2. ISR management APIs (register isr, enters isr from irq_handler)
-   c-3. Enters timer isr periodically
-   c-4. Enters kernel in timer isr
 
 d. System tick & Preemptive
 

@@ -3,6 +3,7 @@
 .arm
 
 .extern init
+.extern timer_clear_int
 
 .section .vectors
 _vector_table:
@@ -62,8 +63,34 @@ undefined_handler:
 
 .align 4
 irq_handler:
+	/* save user's context
+	 * r0-r12, lr, cpsr
+	 */
+	sub	lr, #0x4
+	srsdb	sp!, #SYSTEM_MODE
+	cps	#SYSTEM_MODE
+	push	{r0-r12, lr}
+
+	/* ack irq by reading GICC_IAR*/
 	ldr	r1, =0x1e00010c
 	ldr	r0, [r1]
-	b	.
+
+	/* end irq by writing GICC_EOIR */
+	ldr	r1, =0x1e000110
+	str	r0, [r1]
+
+	/* handling timer isr */
+	mov	r1, #0x50
+	cmp	r0, r1
+	bleq	timer_clear_int
+
+	/* pass the stack pointer to OS through r0*/
+	mov	r0, sp
+
+	cps	#SVC_MODE
+	pop	{r4-r12, lr}
+	bx	lr
+
+
 
 .end

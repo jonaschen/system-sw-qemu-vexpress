@@ -73,8 +73,8 @@ void usertask(void)
 	/* Never terminate the task */
 	while (1){
 		puts("Task #1 alive\n");
-		timer_delay_awhile(0x100000);
-		syscall();
+		timer_delay_awhile(0x80000);
+		//syscall();
 	}
 }
 
@@ -85,9 +85,9 @@ void usertask2(void)
 	/* Never terminate the task */
 	while (1){
 		puts("Task #2 alive\n");
-		timer_delay_awhile(0x200000);
+		timer_delay_awhile(0x100000);
 
-		syscall();
+		//syscall();
 	}
 }
 
@@ -160,6 +160,7 @@ void main(void)
 	puts("Kernel: Control back\n");
 
 	setup_timer_irq();
+	timer_periodic_setup(0x100000);
 
 	while (1) {
 		puts("Kernel: Task switch to task #1\n");
