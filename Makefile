@@ -16,18 +16,25 @@ CFLAGS = -Wall -fno-common -O0 -g \
 	 -ffreestanding \
 	 -march=armv7ve
 
+INCLUDE = include
+CFLAGS += -I$(INCLUDE)
 
 OBJS = vector.o context_switch.o syscall.o
 OBJS += main.o sp804_timer.o
+OUT := out
 
 all: $(IMAGE)
+
+out-dir:
+	mkdir -p $(OUT)
 
 %.o : %.S
 	$(CC) -c $(CFLAGS) $< -o $@
 
-$(IMAGE): kernel.ld $(OBJS)
+$(IMAGE): kernel.ld $(OBJS) out-dir
 	$(LD) $(OBJS) -T kernel.ld -o $(IMAGE)
 	$(OBJDUMP) -d kernel.elf > kernel.list
+	mv $(IMAGE) *.o *.list $(OUT)
 
 qemu: $(IMAGE)
 	@echo "Press Ctrl-A and then X to exit QEMU"
@@ -35,13 +42,13 @@ qemu: $(IMAGE)
 	qemu-system-arm -M vexpress-a9 \
 			-m 1024M \
 			-nographic \
-			-kernel $(IMAGE)
+			-kernel $(OUT)/$(IMAGE)
 
 #debug: -S -s
 #arm-none-eabi-gdb
 #(gdb) target remote localhost:1234
 
 clean:
-	rm -f $(IMAGE) *.o *.list
+	rm -rf $(OUT)
 
 .PHONY: all qemu clean
