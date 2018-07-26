@@ -2,7 +2,7 @@
 
 .arm
 
-.extern main
+.extern init
 
 .section .vectors
 _vector_table:
@@ -21,7 +21,7 @@ _undef:			.word undefined_handler
 _swi:			.word svc_handler
 _prefetch_abort:	.word undefined_handler
 _data_abort:		.word undefined_handler
-_irq:			.word undefined_handler
+_irq:			.word irq_handler
 _fiq:			.word undefined_handler
 
 
@@ -36,8 +36,9 @@ reset_handler:
 	ldr	r0, =__vector_base
 	mcr 	p15, 0, r0, c12, c0, 0
 
-	b	main
+	b	init
 
+	b	.
 
 .align 4
 svc_handler:
@@ -59,5 +60,10 @@ svc_handler:
 undefined_handler:
 	b	.
 
+.align 4
+irq_handler:
+	ldr	r1, =0x1e00010c
+	ldr	r0, [r1]
+	b	.
 
 .end

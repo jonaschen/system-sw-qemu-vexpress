@@ -4,7 +4,7 @@
 #include "asm.h"
 #include "processor.h"
 #include "sp804_timer.h"
-
+#include "gic.h"
 
 int puts(const char *str)
 {
@@ -128,12 +128,19 @@ void initialize_stack(struct task_cb *tcb, void (*task)(void))
 	stack[15] = USER_MODE;
 }
 
+static void setup_timer_irq(void)
+{
+	struct gic_irq_desc desc;
+
+	desc.vector = 32 + 48;
+	desc.sensitive = GIC_SENS_EDGE;
+	desc.priority = 0xE0;
+
+	gic_setup_irq(&desc);
+}
+
 void main(void)
 {
-	if (exec_env_init()) {
-		puts("env init fail\n");
-		goto idle;
-	}
 
 	/* TODO: allocate stack memory */
 	tcb1.stack = usertask_stack + STACK_DEPTH - STACK_BOUND;
@@ -152,6 +159,8 @@ void main(void)
 	tcb1.stack = activate(tcb1.stack);
 	puts("Kernel: Control back\n");
 
+	setup_timer_irq();
+
 	while (1) {
 		puts("Kernel: Task switch to task #1\n");
 		tcb1.stack = activate(tcb1.stack);
@@ -163,4 +172,18 @@ void main(void)
 idle:
 	puts("Kernel: Idle loop\n");
 	while (1);
+}
+
+
+
+void init(void)
+{
+	if (exec_env_init()) {
+		puts("env init fail\n");
+		return;
+	}
+
+	gic_init();
+
+	main();
 }
