@@ -19,7 +19,7 @@ CFLAGS = -Wall -fno-common -O0 -g \
 INCLUDE = include
 CFLAGS += -I$(INCLUDE)
 
-OBJS = vector.o context_switch.o syscall.o
+OBJS = start.o context_switch.o syscall.o
 OBJS += main.o sp804_timer.o gic.o
 OUT := out
 

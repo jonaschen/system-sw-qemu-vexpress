@@ -175,10 +175,18 @@ idle:
 	while (1);
 }
 
+static void mmu_enable_test(void)
+{
+	/* Access an unmapped region */
+	char *unmapped = 0x90000000;
 
+	*unmapped = 0xa5;
+}
 
 void init(void)
 {
+//	mmu_enable_test();
+
 	if (exec_env_init()) {
 		puts("env init fail\n");
 		return;
