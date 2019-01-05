@@ -16,11 +16,14 @@ CFLAGS = -Wall -fno-common -O0 -g \
 	 -ffreestanding \
 	 -march=armv7ve
 
+CFLAGS += -Wno-unused-function \
+	  -Wno-unused-label
+
 INCLUDE = include
 CFLAGS += -I$(INCLUDE)
 
 OBJS = start.o context_switch.o syscall.o
-OBJS += main.o sp804_timer.o gic.o
+OBJS += main.o sp804_timer.o gic.o irq.o io.o
 OUT := out
 
 all: $(IMAGE)

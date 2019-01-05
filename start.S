@@ -3,7 +3,7 @@
 .arm
 
 .extern init
-.extern timer_clear_int
+.extern irq_top_handler
 
 .section .vectors
 _vector_table:
@@ -160,10 +160,8 @@ irq_handler:
 	ldr	r1, =0x1e000110
 	str	r0, [r1]
 
-	/* handling timer isr */
-	mov	r1, #0x50
-	cmp	r0, r1
-	bleq	timer_clear_int
+	/* jump to top irq handler */
+	bl irq_top_handler
 
 	/* pass the stack pointer to OS through r0*/
 	mov	r0, sp

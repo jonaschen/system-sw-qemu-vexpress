@@ -24,6 +24,7 @@
 
 void timer_delay_awhile(uint32_t delay);
 void timer_periodic_setup(uint32_t delay);
-void timer_clear_int(void);
+void timer_clear_int(void *);
+void setup_timer_irq(void);
 
 #endif

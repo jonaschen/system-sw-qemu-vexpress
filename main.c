@@ -5,13 +5,7 @@
 #include "processor.h"
 #include "sp804_timer.h"
 #include "gic.h"
-
-int puts(const char *str)
-{
-	while (*str)
-		*((unsigned int *) UART_BASE) = *str++;
-	return 0;
-}
+#include "io.h"
 
 /* start address for the initialization values of the .data section.
 defined in linker script */
@@ -128,17 +122,6 @@ void initialize_stack(struct task_cb *tcb, void (*task)(void))
 	stack[15] = USER_MODE;
 }
 
-static void setup_timer_irq(void)
-{
-	struct gic_irq_desc desc;
-
-	desc.vector = 32 + 48;
-	desc.sensitive = GIC_SENS_EDGE;
-	desc.priority = 0xE0;
-
-	gic_setup_irq(&desc);
-}
-
 void main(void)
 {
 
@@ -175,13 +158,13 @@ idle:
 	while (1);
 }
 
-static void mmu_enable_test(void)
-{
-	/* Access an unmapped region */
-	char *unmapped = 0x90000000;
-
-	*unmapped = 0xa5;
-}
+//static void mmu_enable_test(void)
+//{
+//	/* Access an unmapped region */
+//	char *unmapped = 0x90000000;
+//
+//	*unmapped = 0xa5;
+//}
 
 void init(void)
 {
