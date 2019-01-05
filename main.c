@@ -5,7 +5,7 @@
 #include "processor.h"
 #include "sp804_timer.h"
 #include "gic.h"
-#include "io.h"
+#include "uart.h"
 
 /* start address for the initialization values of the .data section.
 defined in linker script */
@@ -176,6 +176,7 @@ void init(void)
 	}
 
 	gic_init();
+	uart_init();
 
 	main();
 }

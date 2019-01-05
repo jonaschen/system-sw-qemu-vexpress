@@ -1,7 +1,7 @@
 #include "sp804_timer.h"
 #include "gic.h"
 #include "irq.h"
-#include "io.h"
+#include "uart.h"
 
 #define TIMER_ENABLE		(0x1 << 7)
 #define TIMER_PERIODIC_MODE	(0x1 << 6)
@@ -55,7 +55,7 @@ void timer_delay_awhile(uint32_t delay)
 void setup_timer_irq(void)
 {
 	struct gic_irq_desc desc;
-	uint32_t vector = 32 + 48; /* number of PPI + timer-SPI-offset */
+	uint32_t vector = IRQ_SYS_TIMER_0;
 
 	desc.vector = vector;
 	desc.sensitive = GIC_SENS_EDGE;

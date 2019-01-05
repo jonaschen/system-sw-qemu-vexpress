@@ -23,7 +23,7 @@ INCLUDE = include
 CFLAGS += -I$(INCLUDE)
 
 OBJS = start.o context_switch.o syscall.o
-OBJS += main.o sp804_timer.o gic.o irq.o io.o
+OBJS += main.o sp804_timer.o gic.o irq.o uart.o
 OUT := out
 
 all: $(IMAGE)
