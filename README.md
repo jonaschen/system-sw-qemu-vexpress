@@ -39,3 +39,7 @@ jserv's Hello World for bare metal ARMv8 using QEMU
 ESLab/FreeRTOS---ARM-Cortex-A9-VersatileExpress-Quad-Core-port
 
 https://github.com/jonaschen/FreeRTOS---ARM-Cortex-A9-VersatileExpress-Quad-Core-port.git
+
+linux source - vexpress-v2m.dtsi
+http://infocenter.arm.com/help/topic/com.arm.doc.ddi0183g/DDI0183G_uart_pl011_r1p5_trm.pdf
+http://infocenter.arm.com/help/topic/com.arm.doc.dui0448i/DUI0448I_v2p_ca9_trm.pdf
