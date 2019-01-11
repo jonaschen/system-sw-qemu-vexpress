@@ -6,8 +6,7 @@ I have been studing jserv's tutorial materials and code samples for a while.
 To express my thankfulness, I am trying to give some feedback 
 and sharing of my experience.
 
-# Next
----------
+# Done
 a. Multitasking
 
 b. ARM's Generic Timer (Cortex-A9 doesn't have generic timer)
@@ -21,7 +20,15 @@ c. ARM's Generic Interrupt Controller
 
 d. System tick & Preemptive
 
-e. Enable cache & MMU
+e. MMU enabled (with identity mapping)
+
+# Next
+---------
+a. Add some syscall services
+
+b. Improve task processing utilities
+
+c. Enable cache & take use of MMU
 
 
 Licensing
@@ -43,3 +50,4 @@ https://github.com/jonaschen/FreeRTOS---ARM-Cortex-A9-VersatileExpress-Quad-Core
 linux source - vexpress-v2m.dtsi
 http://infocenter.arm.com/help/topic/com.arm.doc.ddi0183g/DDI0183G_uart_pl011_r1p5_trm.pdf
 http://infocenter.arm.com/help/topic/com.arm.doc.dui0448i/DUI0448I_v2p_ca9_trm.pdf
+http://infocenter.arm.com/help/topic/com.arm.doc.dui0447j/DUI0447J_v2m_p1_trm.pdf

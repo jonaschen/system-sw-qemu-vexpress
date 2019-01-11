@@ -55,20 +55,18 @@ static int exec_env_init(void)
 
 void usertask(void)
 {
+	int a = 0, b = -1;
+
 	puts("User Task #1\n");
-
-	puts("I'm going to return to kernel mode\n");
-	syscall();
-
-	puts("Hello, I am back\n");
-	puts("Let's go to return to kernel mode again\n");
-	syscall();
 
 	/* Never terminate the task */
 	while (1){
 		puts("Task #1 alive\n");
 		timer_delay_awhile(0x80000);
-		//syscall();
+		syscall(~0U, (void *) &a, (void *) &b);
+		if (a == b)
+			puts("syscall test OK\n");
+		a += 2;
 	}
 }
 
@@ -81,8 +79,20 @@ void usertask2(void)
 		puts("Task #2 alive\n");
 		timer_delay_awhile(0x100000);
 
-		//syscall();
+		puts("Task #2 task yield\n");
+		syscall(0, 0, 0);
 	}
+}
+
+void do_system_service(unsigned int service, void *arg1, void *arg2)
+{
+	switch (service) {
+	default:
+		*(int *) arg2 = *(int *) arg1;
+		break;
+	}
+
+	return;
 }
 
 struct task_cb {
@@ -122,6 +132,8 @@ void initialize_stack(struct task_cb *tcb, void (*task)(void))
 	stack[15] = USER_MODE;
 }
 
+int do_context_switch = 0;
+
 void main(void)
 {
 
@@ -131,16 +143,6 @@ void main(void)
 
 	tcb2.stack = usertask_stack2 + STACK_DEPTH - STACK_BOUND;
 	initialize_stack(&tcb2, usertask2);
-
-	puts("Hello, Jonas.\n");
-
-	puts("Kernel: user task 1st round\n");
-	tcb1.stack = activate(tcb1.stack);
-	puts("Kernel: Control back\n");
-
-	puts("Kernel: user task 2nd round\n");
-	tcb1.stack = activate(tcb1.stack);
-	puts("Kernel: Control back\n");
 
 	setup_timer_irq();
 	timer_periodic_setup(0x100000);

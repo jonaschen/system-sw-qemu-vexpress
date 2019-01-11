@@ -22,7 +22,8 @@ void timer_periodic_setup(uint32_t delay)
 
 }
 
-void timer_clear_int(void *arg)
+extern int do_context_switch;
+void timer_int_handler(void *arg)
 {
 	//uint32_t value;
 
@@ -32,6 +33,7 @@ void timer_clear_int(void *arg)
 
 	puts("timer irq.\n");
 	write_reg(1, TIMER_1_INTCLR);
+	do_context_switch = 1;
 
 	return;
 }
@@ -61,6 +63,6 @@ void setup_timer_irq(void)
 	desc.sensitive = GIC_SENS_EDGE;
 	desc.priority = 0xE0;
 
-	irq_register_handler(vector, timer_clear_int, 0);
+	irq_register_handler(vector, timer_int_handler, 0);
 	gic_setup_irq(&desc);
 }

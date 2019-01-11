@@ -58,6 +58,7 @@ qemu: $(IMAGE)
 #debug: -S -s
 #arm-none-eabi-gdb
 #(gdb) target remote localhost:1234
+#(gdb) restore user.elf binary 0x0
 
 clean:
 	rm -rf $(OUT)

@@ -4,6 +4,8 @@
 
 .extern init
 .extern irq_top_handler
+.extern do_context_switch
+.extern do_system_service
 
 .section .vectors
 _vector_table:
@@ -127,12 +129,20 @@ svc_handler:
 	cps	#SYSTEM_MODE
 	push	{r0-r12, lr}
 
+	cmp	r0, #0
+	bne	do_service
+
 	/* pass the stack pointer to OS through r0*/
 	mov	r0, sp
 
 	cps	#SVC_MODE
 	pop	{r4-r12, lr}
 	bx	lr
+
+do_service:
+	bl	do_system_service
+	pop	{r0-r12, lr}
+	rfeia	sp!
 
 .align 4
 undefined_handler:
@@ -161,11 +171,20 @@ irq_handler:
 	str	r0, [r1]
 
 	/* jump to top irq handler */
-	bl irq_top_handler
+	bl	irq_top_handler
 
 	/* pass the stack pointer to OS through r0*/
-	mov	r0, sp
+	ldr	r4, =do_context_switch
+	ldr	r5, [r4]
+	cmp	r5, #0
+	bne	back_to_kernel
+	pop	{r0-r12, lr}
+	rfeia	sp!
 
+back_to_kernel:
+	mov	r0, sp
+	mov	r5, #0
+	str	r5, [r4]
 	cps	#SVC_MODE
 	pop	{r4-r12, lr}
 	bx	lr

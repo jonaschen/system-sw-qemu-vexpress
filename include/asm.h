@@ -11,6 +11,6 @@ unsigned int *activate(unsigned int *stack);
 /*
  * give control back to the Operating System
  */
-void syscall(void);
+void syscall(unsigned int service, void *arg1, void *arg2);
 
 #endif
