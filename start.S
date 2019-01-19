@@ -9,7 +9,7 @@
 
 .section .vectors
 _vector_table:
-	ldr	pc, _boot
+	b	reset_handler
 	ldr	pc, _undef
 	ldr	pc, _swi
 	ldr	pc, _prefetch_abort
@@ -50,12 +50,9 @@ reset_handler:
 	 */
 	ldr	r0, =0b00000000000000000000110111100000
 	ldr	r1, =ttb_address
-	ldr	r3, =4096
-clean_dir:
-	orr	r2, r0, r3, LSL #20
-	str	r2, [r1, r3, LSL #2]
-	subs	r3, r3, #1
-	bne	clean_dir
+	bl	clean_ttb_dir
+	ldr	r1, =ttb1_address
+	bl	clean_ttb_dir
 
 	orr	r0, r0, #0b10
 	/*
@@ -67,18 +64,17 @@ clean_dir:
 	orr	r0, r0, #(0b101 << 12)	// set TEX as write-back, write allocate
 	orr	r0, r0, #(0x1 << 16)	// shareable
 
-	ldr	r5, =normal_memory_base
-	lsr	r3, r5, #20
-	ldr	r5, =normal_memory_size
-	lsr	r4, r5, #20
-	add	r4, r3, r4
 	ldr	r1, =ttb_address
-set_memory_dir:
-	orr	r2, r0, r3, LSL #20
-	str	r2, [r1, r3, LSL #2]
-	adds	r3, r3, #1
-	cmp	r3, r4
-	bne	set_memory_dir
+	ldr	r2, =normal_memory_base
+	ldr	r3, =normal_memory_base
+	ldr	r4, =normal_memory_size
+	bl	set_l1_dir
+
+	ldr	r1, =ttb1_address
+	ldr	r2, =kernel_image_base
+	ldr	r3, =KERNEL_OFFSET
+	ldr	r4, =kernel_image_size
+	bl	set_l1_dir
 
 	/*
  	 * Device Memory Mapping (mapping as strongly-ordered)
@@ -87,24 +83,20 @@ set_memory_dir:
 	bic	r0, r0, #0b1100		// clear CB bits
 	bic	r0, r0, #(0b111 << 12)	// clear TEX bits
 
-	ldr	r5, =peripheral_device_base
-	lsr	r3, r5, #20
-	ldr	r5, =peripheral_device_size
-	lsr	r4, r5, #20
-	add	r4, r3, r4
 	ldr	r1, =ttb_address
-set_device_dir:
-	orr	r2, r0, r3, LSL #20
-	str	r2, [r1, r3, LSL #2]
-	adds	r3, r3, #1
-	cmp	r3, r4
-	bne	set_device_dir
+	ldr	r2, =peripheral_device_base
+	ldr	r3, =peripheral_device_base
+	ldr	r4, =peripheral_device_size
+	bl	set_l1_dir
 
 	/* Initialize MMU */
 	mov	r1, #0x0
+	orr	r1, r1, #0b001 		/* Setting T0SZ for switching translation tables */
 	mcr	p15, 0, r1, c2, c0, 2	// Write Translation Table Base Control Register
 	ldr	r1, =ttb_address
 	mcr	p15, 0, r1, c2, c0, 0	// Write Translation Table base Register 0
+	ldr	r1, =ttb1_address
+	mcr	p15, 0, r1, c2, c0, 1	// Write TTBR1
 	ldr	r1, =0x55555555
 	mcr	p15, 0, r1, c3, c0, 0	// Write Domain Access Control Register
 
@@ -116,6 +108,8 @@ set_device_dir:
 	ISB
 	DSB
 
+	ldr	pc, =mmu_enabled
+mmu_enabled:
 	b	init
 
 	b	.
@@ -189,6 +183,35 @@ back_to_kernel:
 	pop	{r4-r12, lr}
 	bx	lr
 
+.align 4
+set_l1_dir:
+	/* r0:flags, r1:ttb_addr, r2:vaddr, r3:paddr, r4:length
+	   r7: temp
+	 */
+	lsr	r2, r2, #20
+	lsr	r3, r3, #20
+	lsr	r4, r4, #20
+	add	r4, r3, r4
+et_l1_dir_loop:
+	orr	r7, r0, r2, LSL #20
+	str	r7, [r1, r3, LSL #2]
+	add	r3, r3, #1
+	add	r2, r2, #1
+	cmp	r3, r4
+	bne	et_l1_dir_loop
 
+	bx	lr
+
+.align 4
+clean_ttb_dir:
+	/* r0:flags, r1:ttb_addr */
+	ldr	r3, =4096
+clean_ttb_dir_loop:
+	orr	r2, r0, r3, LSL #20
+	str	r2, [r1, r3, LSL #2]
+	subs	r3, r3, #1
+	bne	clean_ttb_dir_loop
+
+	bx	lr
 
 .end

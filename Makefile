@@ -14,10 +14,13 @@ export OBJDUMP = $(CROSS_COMPILE)objdump
 CFLAGS = -Wall -fno-common -O0 -g \
 	 -nostdlib -nostartfiles \
 	 -ffreestanding \
-	 -march=armv7ve
+	 -march=armv7ve \
+	 -fPIC
 
 CFLAGS += -Wno-unused-function \
 	  -Wno-unused-label
+
+LDFLAGS = -e 0x60100000
 
 INCLUDE = include
 CFLAGS += -I$(INCLUDE)
@@ -43,9 +46,9 @@ obj-drivers:
 	$(MAKE) -C $(DIR_DRIVER)
 
 $(IMAGE): kernel.ld $(OBJS) out-dir
-	$(LD) $(OBJS) $(DRIVER_OBJS) -T kernel.ld -o $(IMAGE)
+	$(LD) $(OBJS) $(DRIVER_OBJS) $(LDFLAGS) -T kernel.ld -o $(IMAGE) --print-map > kernel.map
 	$(OBJDUMP) -d kernel.elf > kernel.list
-	mv $(IMAGE) *.o *.list $(OUT)
+	mv $(IMAGE) *.o *.list *.map $(OUT)
 
 qemu: $(IMAGE)
 	@echo "Press Ctrl-A and then X to exit QEMU"

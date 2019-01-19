@@ -30,6 +30,12 @@ b. Improve task processing utilities
 
 c. Enable cache & take use of MMU
 
+c-1. Use Kernel Virtual Address from offset 0x80000000, so we can take use of TTBR1
+
+c-2. Simple Page allocator
+
+c-3. User Hello World
+
 
 Licensing
 ---------

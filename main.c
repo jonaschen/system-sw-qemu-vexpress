@@ -9,7 +9,7 @@
 
 /* start address for the initialization values of the .data section.
 defined in linker script */
-extern uint32_t _sidata;
+extern uint32_t _etext;
 /* start address for the .data section. defined in linker script */
 extern uint32_t _sdata;
 /* end address for the .data section. defined in linker script */
@@ -30,7 +30,7 @@ char data_test2 = 2;
 static int exec_env_init(void)
 {
 	/* Copy the data segment initializers from flash to SRAM */
-	uint32_t *idata_begin = &_sidata;
+	uint32_t *idata_begin = &_etext;
 	uint32_t *data_begin = &_sdata;
 	uint32_t *data_end = &_edata;
 
