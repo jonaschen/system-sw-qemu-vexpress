@@ -20,7 +20,7 @@ CFLAGS = -Wall -fno-common -O0 -g \
 CFLAGS += -Wno-unused-function \
 	  -Wno-unused-label
 
-LDFLAGS = -e 0x60100000
+LDFLAGS = -e 0x60000000	# TODO: link change with ld script
 
 INCLUDE = include
 CFLAGS += -I$(INCLUDE)
