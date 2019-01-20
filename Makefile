@@ -26,6 +26,7 @@ INCLUDE = include
 CFLAGS += -I$(INCLUDE)
 
 DIR_DRIVER := driver
+USER_DIR := userspace
 
 export CFLAGS
 
@@ -34,7 +35,7 @@ OBJS += main.o irq.o mm.o
 DRIVER_OBJS = $(DIR_DRIVER)/*.o
 OUT := out
 
-all: obj-drivers $(IMAGE)
+all: obj-drivers obj-user $(IMAGE)
 
 out-dir:
 	mkdir -p $(OUT)
@@ -45,10 +46,17 @@ out-dir:
 obj-drivers:
 	$(MAKE) -C $(DIR_DRIVER)
 
+obj-user:
+	$(MAKE) -C $(USER_DIR)
+
 $(IMAGE): kernel.ld $(OBJS) out-dir
 	$(LD) $(OBJS) $(DRIVER_OBJS) $(LDFLAGS) -T kernel.ld -o $(IMAGE) --print-map > kernel.map
 	$(OBJDUMP) -d kernel.elf > kernel.list
 	mv $(IMAGE) *.o *.list *.map $(OUT)
+	dd if=$(OUT)/kernel.elf of=$(OUT)/test.elf
+	dd if=$(USER_DIR)/out/hello.elf of=$(OUT)/test.elf conv=notrunc bs=1 seek=`echo "ibase=16; 10100" | bc`
+
+# convert 0x10100 to decimal: `echo "ibase=16; 10100" | bc`
 
 qemu: $(IMAGE)
 	@echo "Press Ctrl-A and then X to exit QEMU"
@@ -56,8 +64,9 @@ qemu: $(IMAGE)
 	qemu-system-arm -M vexpress-a9 \
 			-m 1024M \
 			-nographic \
-			-kernel $(OUT)/$(IMAGE)
+			-kernel $(OUT)/test.elf
 
+#			-kernel $(OUT)/$(IMAGE)
 #debug: -S -s
 #arm-none-eabi-gdb
 #(gdb) target remote localhost:1234
@@ -66,5 +75,6 @@ qemu: $(IMAGE)
 clean:
 	rm -rf $(OUT)
 	$(MAKE) clean -C $(DIR_DRIVER)
+	$(MAKE) clean -C $(USER_DIR)
 
 .PHONY: all qemu clean

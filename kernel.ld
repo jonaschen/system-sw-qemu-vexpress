@@ -30,6 +30,12 @@ SECTIONS
 	{
 		_stext = .;
 		KEEP(*(.vectors))
+		. = ALIGN(0x100);
+		_sfirmware = .;
+
+		. = . + 0x4000;
+		_efirmware = .;
+
 		*(.text)
 		*(.text.*)
 		*(.rodata)
