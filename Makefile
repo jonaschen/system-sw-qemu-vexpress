@@ -30,7 +30,7 @@ DIR_DRIVER := driver
 export CFLAGS
 
 OBJS = start.o context_switch.o syscall.o
-OBJS += main.o irq.o
+OBJS += main.o irq.o mm.o
 DRIVER_OBJS = $(DIR_DRIVER)/*.o
 OUT := out
 

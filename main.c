@@ -6,6 +6,7 @@
 #include "sp804_timer.h"
 #include "gic.h"
 #include "uart.h"
+#include "mm.h"
 
 /* start address for the initialization values of the .data section.
 defined in linker script */
@@ -160,22 +161,44 @@ idle:
 	while (1);
 }
 
-//static void mmu_enable_test(void)
-//{
-//	/* Access an unmapped region */
-//	char *unmapped = 0x90000000;
-//
-//	*unmapped = 0xa5;
-//}
+static void page_allocate_test(void)
+{
+	int result = 0, cnt = 1, i;
+	void *vaddr;
+
+	vaddr = get_page(cnt);
+	if (!vaddr) {
+		result = -1;
+		goto out;
+	}
+
+	for (i = 0; i < 1024; i++)
+		*((uint32_t *)vaddr + i) = 0x55ff00aa;
+
+	for (i = 0; i < 1024; i++) {
+		if (*((uint32_t *)vaddr + i) != 0x55ff00aa) {
+			puts("page alloc test fail\n");
+			while (1);
+		}
+	}
+out:
+	if (result) {
+		puts("page alloc test fail. loop forever\n");
+		while (1);
+	}
+}
 
 void init(void)
 {
-//	mmu_enable_test();
 
 	if (exec_env_init()) {
 		puts("env init fail\n");
 		return;
 	}
+
+	mm_init();
+
+	page_allocate_test();
 
 	gic_init();
 	uart_init();
