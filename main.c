@@ -135,8 +135,11 @@ void initialize_stack(struct task_cb *tcb, void (*task)(void))
 
 int do_context_switch = 0;
 
+extern void userspace_loader_test(void);
 void main(void)
 {
+
+	userspace_loader_test();
 
 	/* TODO: allocate stack memory */
 	tcb1.stack = usertask_stack + STACK_DEPTH - STACK_BOUND;

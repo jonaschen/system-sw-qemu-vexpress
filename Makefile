@@ -31,7 +31,7 @@ USER_DIR := userspace
 export CFLAGS
 
 OBJS = start.o context_switch.o syscall.o
-OBJS += main.o irq.o mm.o
+OBJS += main.o irq.o mm.o loader.o
 DRIVER_OBJS = $(DIR_DRIVER)/*.o
 OUT := out
 
