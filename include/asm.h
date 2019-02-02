@@ -1,12 +1,13 @@
 #ifndef __ASM_H__
 #define __ASM_H__
 
+#include <stdint.h>
 
 /*
  * activate an user task
  * return value: current stack pointer
  */
-unsigned int *activate(unsigned int *stack);
+uint32_t *activate(uint32_t *stack);
 
 /*
  * give control back to the Operating System

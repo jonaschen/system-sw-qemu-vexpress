@@ -2,6 +2,7 @@
 
 #include "mm.h"
 #include "uart.h"
+#include "task.h"
 
 extern uint32_t ttb_address;
 extern uint32_t ttb1_address;
@@ -27,7 +28,45 @@ static uint32_t	*kernel_pte;			/* VMALLOC_ADDR_START mapping in kernel_pte[0] et
 #define VIRT_TO_PHY(addr)	((uint32_t) (addr) - (0x80000000) + (0x60000000)) /* TODO: replace magic number */
 #define PHY_TO_VIRT(addr)	((uint32_t) (addr) - (0x60000000) + (0x80000000) )
 
-static void *map_pages(void *addr, uint32_t start_pfn, uint32_t count)
+/* Each user task is permitted 1MB of virtual space */
+#define SIZE_PER_USER_TASK	(0x100000)
+static uint32_t	*user_pte;
+
+void switch_user_pte(struct task_cb *tcb)
+{
+	uint32_t *pgd;
+	uint32_t pgd_flags = 0xe5;
+	uint32_t pgd_offset;
+
+	if (!tcb || !tcb->pte)
+		return;
+
+	pgd_offset = (tcb->vaddr >> SECTION_OFFSET);
+
+	pgd = (uint32_t *) PHY_TO_VIRT(&ttb_address);
+	pgd[pgd_offset] = VIRT_TO_PHY(tcb->pte) | pgd_flags;
+}
+
+static uint32_t *mm_calculate_pte(uint32_t vaddr)
+{
+	uint32_t *pte;
+	uint32_t vaddr_offset;
+
+	if (vaddr < VMALLOC_ADDR_START) {
+		if (!current->pte) {
+			current->pte = user_pte;
+			user_pte += ENTRIES_PER_PTE;
+		}
+		pte = current->pte;
+	} else {
+		vaddr_offset = vaddr - VMALLOC_ADDR_START;
+		pte = kernel_pte + (vaddr_offset >> SECTION_OFFSET) * ENTRIES_PER_PTE;
+	}
+
+	return pte;
+}
+
+void *map_pages(void *addr, uint32_t start_pfn, uint32_t count)
 {
 /* Calculate the address of PTE table
    check kernel mapping or user mapping
@@ -62,7 +101,8 @@ static void *map_pages(void *addr, uint32_t start_pfn, uint32_t count)
 		pgd_offset = (vaddr >> SECTION_OFFSET);
 
 		vaddr_offset = vaddr - vaddr_base;
-		pte = kernel_pte + (vaddr_offset >> SECTION_OFFSET) * ENTRIES_PER_PTE;
+
+		pte = mm_calculate_pte( vaddr);
 		pgd[pgd_offset] = VIRT_TO_PHY(pte) | pgd_flags;
 
 		while ((vaddr >> SECTION_OFFSET) == pgd_offset) {
@@ -82,8 +122,21 @@ static void *map_pages(void *addr, uint32_t start_pfn, uint32_t count)
 
 void *get_page(int count)
 {
-	uint32_t start, pfn, found;
+	uint32_t start;
 	void *addr = 0;
+
+	start = allocate_page(count);
+	if (start == ~0U)
+		return 0;
+
+	addr = map_pages(vmalloc_addr, start, count);
+
+	return addr;
+}
+
+uint32_t allocate_page(int count)
+{
+	uint32_t start, pfn, found;
 
 	for (start = min_pfn; start < max_pfn - count; start++) {
 		found = 1;
@@ -96,22 +149,25 @@ void *get_page(int count)
 		if (found) {
 			for (pfn = start; pfn < start + count; pfn++)
 				page_flags[pfn - min_pfn] &= ~PAGE_FLAG_AVAILABLE;
-			addr = map_pages(vmalloc_addr, start, count);
-			return addr;
+			return start;
 		}
 	}
 
-	if (!found)
+	if (!found) {
 		puts("No pages found\n");
+		start = ~0U;
+	}
 
-	return addr;
+	return start;
 }
 
 void mm_init(void)
 {
 	uint32_t pfn;
 
-	kernel_pte = (uint32_t *) PHY_TO_VIRT(&ttb1_address) + 0x1000;	/* 0x1000 = 16KB / sizeof(uint32_t) */
+	/* 0x1000 = 16KB / sizeof(uint32_t) */
+	kernel_pte = (uint32_t *) PHY_TO_VIRT(&ttb1_address) + 0x1000;
+	user_pte = (uint32_t *) PHY_TO_VIRT(&ttb_address) + 0x1000;
 
 	max_pfn = min_pfn + PHYSICAL_PAGE_FRAMES;
 

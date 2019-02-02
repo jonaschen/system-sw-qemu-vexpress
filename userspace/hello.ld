@@ -1,6 +1,7 @@
 MEMORY
 {
-	USER	(RWX): ORIGIN = 0x0, LENGTH = 0x80000000
+	USER_CODE	(RWX): ORIGIN = 0x0, LENGTH = 0x8000
+	USER_DATA	(RWX): ORIGIN = 0x8000, LENGTH = 0x8000
 
 	KERNEL	(RWX) : ORIGIN = 0x80000000, LENGTH = 0x80000000
 }
@@ -16,9 +17,8 @@ SECTIONS
 		*(.rodata)
 		*(.rodata.*)
 
-		. = ALIGN(4);
 		_etext = .;
-	} > USER
+	} > USER_CODE
 
 	.data :
 	{
@@ -29,7 +29,7 @@ SECTIONS
 
 		. = ALIGN(4);
 		_edata = .;
-	} > USER
+	} > USER_DATA
 
 	.bss (NOLOAD):
 	{
@@ -39,7 +39,7 @@ SECTIONS
 
 		. = ALIGN(4);
 		_ebss = .;
-	} > USER
+	} > USER_DATA
 }
 
 /* Note. */

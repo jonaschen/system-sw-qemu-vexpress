@@ -7,6 +7,7 @@
 #include "gic.h"
 #include "uart.h"
 #include "mm.h"
+#include "task.h"
 
 /* start address for the initialization values of the .data section.
 defined in linker script */
@@ -96,21 +97,20 @@ void do_system_service(unsigned int service, void *arg1, void *arg2)
 	return;
 }
 
-struct task_cb {
-	unsigned int	*stack;
-};
-
 #define STACK_DEPTH	256
 #define STACK_BOUND	16
-unsigned int usertask_stack[STACK_DEPTH];
-struct task_cb tcb1;
+#define KERNEL_TASK_NUM	(2)
+#define USER_TASK_NUM	(2)
+#define TASK_NUMBER	(KERNEL_TASK_NUM + USER_TASK_NUM)
 
-unsigned int usertask_stack2[STACK_DEPTH];
-struct task_cb tcb2;
+uint32_t usertask_stacks[TASK_NUMBER][STACK_DEPTH];
+struct task_cb tcbs[TASK_NUMBER];
+
+struct task_cb *current;
 
 void initialize_stack(struct task_cb *tcb, void (*task)(void))
 {
-	unsigned int *stack = tcb->stack;
+	unsigned int *stack = (unsigned int *) tcb->stack;
 	/*
 	 * Initialization of process stack.
 	 * r0-r12, lr, cpsr
@@ -135,28 +135,33 @@ void initialize_stack(struct task_cb *tcb, void (*task)(void))
 
 int do_context_switch = 0;
 
-extern void userspace_loader_test(void);
+extern int load_user_task(struct task_cb *tcb, uint32_t *task_entry);
 void main(void)
 {
+	uint32_t task_entry;
+	int i;
 
-	userspace_loader_test();
-
+	for (i = 0; i < TASK_NUMBER; i++) {
 	/* TODO: allocate stack memory */
-	tcb1.stack = usertask_stack + STACK_DEPTH - STACK_BOUND;
-	initialize_stack(&tcb1, usertask);
+		tcbs[i].stack = usertask_stacks[i] + STACK_DEPTH - STACK_BOUND;
+	}
+	initialize_stack(&tcbs[0], usertask);
+	initialize_stack(&tcbs[1], usertask2);
 
-	tcb2.stack = usertask_stack2 + STACK_DEPTH - STACK_BOUND;
-	initialize_stack(&tcb2, usertask2);
+	for (i = KERNEL_TASK_NUM; i < TASK_NUMBER; i++) {
+		current = &tcbs[i];
+		load_user_task(&tcbs[i], &task_entry);
+		initialize_stack(&tcbs[i], (void *) task_entry);
+	}
 
 	setup_timer_irq();
 	timer_periodic_setup(0x100000);
 
 	while (1) {
-		puts("Kernel: Task switch to task #1\n");
-		tcb1.stack = activate(tcb1.stack);
-
-		puts("Kernel: Task switch to task #2\n");
-		tcb2.stack = activate(tcb2.stack);
+		for (i = 0; i < TASK_NUMBER; i++) {
+			puts("Kernel: Task switch\n");
+			tcbs[i].stack = activate(tcbs[i].stack);
+		}
 	}
 
 idle:
