@@ -25,17 +25,19 @@ LDFLAGS = -e 0x60000000	# TODO: link change with ld script
 INCLUDE = include
 CFLAGS += -I$(INCLUDE)
 
-DIR_DRIVER := driver
+DRIVER_DIR := driver
 USER_DIR := userspace
+LIB_DIR := lib
 
 export CFLAGS
 
 OBJS = start.o context_switch.o syscall.o
 OBJS += main.o irq.o mm.o loader.o
-DRIVER_OBJS = $(DIR_DRIVER)/*.o
+DRIVER_OBJS = $(DRIVER_DIR)/*.o
+LIB_OBJS = $(LIB_DIR)/*.o
 OUT := out
 
-all: obj-drivers obj-user $(IMAGE)
+all: obj-drivers obj-user obj-lib $(IMAGE)
 
 out-dir:
 	mkdir -p $(OUT)
@@ -44,13 +46,16 @@ out-dir:
 	$(CC) -c $(CFLAGS) $< -o $@
 
 obj-drivers:
-	$(MAKE) -C $(DIR_DRIVER)
+	$(MAKE) -C $(DRIVER_DIR)
 
 obj-user:
 	$(MAKE) -C $(USER_DIR)
 
+obj-lib:
+	$(MAKE) -C $(LIB_DIR)
+
 $(IMAGE): kernel.ld $(OBJS) out-dir
-	$(LD) $(OBJS) $(DRIVER_OBJS) $(LDFLAGS) -T kernel.ld -o $(IMAGE) --print-map > kernel.map
+	$(LD) $(OBJS) $(DRIVER_OBJS) $(LIB_OBJS) $(LDFLAGS) -T kernel.ld -o $(IMAGE) --print-map > kernel.map
 	$(OBJDUMP) -d kernel.elf > kernel.list
 	mv $(IMAGE) *.o *.list *.map $(OUT)
 	dd if=$(OUT)/kernel.elf of=$(OUT)/test.elf
@@ -74,7 +79,8 @@ qemu: $(IMAGE)
 
 clean:
 	rm -rf $(OUT)
-	$(MAKE) clean -C $(DIR_DRIVER)
+	$(MAKE) clean -C $(DRIVER_DIR)
 	$(MAKE) clean -C $(USER_DIR)
+	$(MAKE) clean -C $(LIB_DIR)
 
 .PHONY: all qemu clean

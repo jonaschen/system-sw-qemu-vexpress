@@ -11,7 +11,7 @@ void main(void)
 	while (1) {
 		i = 0U;
 		puts("Ha Ha.\n");
-		while (i++ < 0xf0000);
+		while (i++ < 0xf000000);
 	}
 }
 

@@ -8,6 +8,7 @@
 #include "uart.h"
 #include "mm.h"
 #include "task.h"
+#include "io.h"
 
 /* start address for the initialization values of the .data section.
 defined in linker script */
@@ -159,7 +160,9 @@ void main(void)
 
 	while (1) {
 		for (i = 0; i < TASK_NUMBER; i++) {
-			puts("Kernel: Task switch\n");
+			puts("Kernel: Task switch to #");
+			print_int((uint32_t) i + 1);
+			puts("\n");
 			tcbs[i].stack = activate(tcbs[i].stack);
 		}
 	}
