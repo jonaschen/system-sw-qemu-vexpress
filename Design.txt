@@ -1,0 +1,49 @@
+Motivation:
+	Apply software design concepts and study OS concepts by practice.
+
+Target:
+	Develop a minishell application based on current status.
+
+Ref:
+	All the materials mainly referenced from
+	1. ARM's open source information
+	2. Linux kernel source
+	3. Jserv's sharing materials (especially - https://github.com/PikoRT/pikoRT )
+
+-------------------------------------------------------------------------------------
+Basic user scenario:
+	1. After system booting up, kernel will start minishell as the first user program.
+	2. minishell prints prompt to console through uart
+	3. minishell waits for user's input (through uart), and echos each input character back to console.
+	   If the user enters '\n', minishell will try to parse and execute this command.
+
+
+Features:
+	1. A 'file system' to store the program file of minishell.
+		- Also need a mechanism to place this program into the file-system image.
+		- Mimic the methods of linux and piko, there should be an interface between kernel and
+		  the file system instance.
+	2. The kernel needs a 'loader' to load the program file found in the file system.
+		- file format will be ELF.
+		- memory to place the loaded program will be dynamically allocated.
+		  (also will learn from linux/piko)
+	3. The kernel needs to start a 'user task' with this loaded program.
+	4. There should be a minimum libc, and it will invokes the service provided by kernel
+	   through syscall interface.
+		- Like piko, this system will try support partial POSIX.
+	5. The kernel should provid console implementation.
+		- .........
+
+----------------------------------------------------------------------------------------
+Input Path Analysis:
+	1. UART module receives charater data through RX signal line, the data enters
+	   the internal sram (registers/fifo).
+	   UART module raise interrupt signal connected to gic, so the Cortex-A9 can receive the signal.
+	2. Cortex-A9 enters irq exception handler, and asks gic for the interrupt number.
+	   GIC will give Cortex-A9 the interrupt number corresponding to UART.
+	--> Experiment UART-a. Prepare a fifo to get inputs from UART port.
+                               Use a kernel task to read and print the fifo buffer.
+
+
+
+

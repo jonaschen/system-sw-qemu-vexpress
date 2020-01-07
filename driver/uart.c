@@ -3,6 +3,55 @@
 #include "gic.h"
 #include "irq.h"
 
+#define IN_BUF_SIZE	(64)
+struct uart_input_buf {
+	char	*head;
+	char	*tail;
+	int	count;
+	char	buf[IN_BUF_SIZE];
+};
+
+static struct uart_input_buf input_buf;
+
+static void uart_buf_init(void)
+{
+	input_buf.head = &input_buf.buf[0];
+	input_buf.tail = &input_buf.buf[0];
+	input_buf.count = 0;
+}
+
+char uart_buf_getchar(void)
+{
+	char c;
+
+	if (input_buf.count == 0)
+		return 0;
+
+	c = *(input_buf.tail);
+	input_buf.tail++;
+	if (input_buf.tail == &input_buf.buf[IN_BUF_SIZE])
+		input_buf.tail = &input_buf.buf[0];
+
+	input_buf.count--;
+
+	return c;
+}
+
+void uart_buf_putchar(char c)
+{
+	if (input_buf.count >= IN_BUF_SIZE)
+		return;
+
+	*(input_buf.head) = c;
+	input_buf.head++;
+	if (input_buf.head == &input_buf.buf[IN_BUF_SIZE])
+		input_buf.head = &input_buf.buf[0];
+
+	input_buf.count++;
+
+	return;
+}
+
 int putchar(int c)
 {
 	*((unsigned int *) UART_BASE) = c;
@@ -23,7 +72,8 @@ void uart_int(void *arg)
 
 //	puts("uart irq.\n");
 	c = *((unsigned int *) UART_BASE);
-	*((unsigned int *) UART_BASE) = c;
+//	*((unsigned int *) UART_BASE) = c;
+	uart_buf_putchar(c);
 
 	value = read_reg(UART_MIS);
 	write_reg(value, UART_ICR);
@@ -46,4 +96,6 @@ void uart_init(void)
 	value = read_reg(UART_IMSC);
 	value |= (UART_IMSC_RXIM);
 	write_reg(value, UART_IMSC);
+
+	uart_buf_init();
 }

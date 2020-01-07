@@ -17,6 +17,8 @@
 /* */
 
 int puts(const char *str);
+int putchar(int c);
 void uart_init(void);
+char uart_buf_getchar(void);
 
 #endif

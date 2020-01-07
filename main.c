@@ -73,16 +73,18 @@ void usertask(void)
 	}
 }
 
-void usertask2(void)
+void uart_task(void)
 {
-	puts("User Task #2\n");
+	char c;
+
+	puts("UART Task\n");
 
 	/* Never terminate the task */
 	while (1){
-		puts("Task #2 alive\n");
-		timer_delay_awhile(0x100000);
+		timer_delay_awhile(0x100);
+		while ((c = uart_buf_getchar()) != 0)
+			putchar((int) c);
 
-		puts("Task #2 task yield\n");
 		syscall(0, 0, 0);
 	}
 }
@@ -147,7 +149,7 @@ void main(void)
 		tcbs[i].stack = usertask_stacks[i] + STACK_DEPTH - STACK_BOUND;
 	}
 	initialize_stack(&tcbs[0], usertask);
-	initialize_stack(&tcbs[1], usertask2);
+	initialize_stack(&tcbs[1], uart_task);
 
 	for (i = KERNEL_TASK_NUM; i < TASK_NUMBER; i++) {
 		current = &tcbs[i];
