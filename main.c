@@ -9,6 +9,7 @@
 #include "mm.h"
 #include "task.h"
 #include "io.h"
+#include "syscall.h"
 
 /* start address for the initialization values of the .data section.
 defined in linker script */
@@ -58,7 +59,8 @@ static int exec_env_init(void)
 
 void usertask(void)
 {
-	int a = 0, b = -1;
+	int a = 0, b = -1, c = 3;
+	int sysno;
 
 	puts("User Task #1\n");
 
@@ -66,10 +68,27 @@ void usertask(void)
 	while (1){
 		puts("Task #1 alive\n");
 		timer_delay_awhile(0x80000);
-		syscall(~0U, (void *) &a, (void *) &b);
-		if (a == b)
-			puts("syscall test OK\n");
+
+		sysno = 16;
+		do_syscall0(sysno);
+
+		sysno = 17;
+		do_syscall1((void *)&c, sysno);
+		if (c == 0)
+			puts("syscall1 test OK\n");
+
+		sysno = 18;
+		do_syscall2((void *)&a, (void *)&c, sysno);
+		if (c == a)
+			puts("syscall2 test OK\n");
+
+		sysno = 19;
+		do_syscall3((void *)&a, (void *)&b, (void *)&c, sysno);
+		if (a == b + c)
+			puts("syscall3 test OK\n");
+
 		a += 2;
+		c = a + 1;
 	}
 }
 
@@ -85,15 +104,24 @@ void uart_task(void)
 		while ((c = uart_buf_getchar()) != 0)
 			putchar((int) c);
 
-		syscall(0, 0, 0);
+		do_syscall0(100);
 	}
 }
 
-void do_system_service(unsigned int service, void *arg1, void *arg2)
+void do_system_service(int service, void *arg1, void *arg2, void *arg3)
 {
+
 	switch (service) {
-	default:
+	case 17:
+		*(int *) arg1 = 0;
+		break;
+	case 18:
 		*(int *) arg2 = *(int *) arg1;
+		break;
+	case 19:
+		*(int *) arg1 = *(int *) arg2 + *(int *) arg3;
+		break;
+	default:
 		break;
 	}
 

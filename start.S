@@ -121,12 +121,13 @@ svc_handler:
 	 */
 	srsdb	sp!, #SYSTEM_MODE
 	cps	#SYSTEM_MODE
-	push	{r0-r12, lr}
+	push	{r1-r12, lr}
 
-	cmp	r0, #0
+	cmp	r7, #100
 	bne	do_service
 
 	/* pass the stack pointer to OS through r0*/
+	push	{r0}
 	mov	r0, sp
 
 	cps	#SVC_MODE
@@ -134,8 +135,12 @@ svc_handler:
 	bx	lr
 
 do_service:
+	mov 	r3, r2
+	mov 	r2, r1
+	mov 	r1, r0
+	mov	r0, r7
 	bl	do_system_service
-	pop	{r0-r12, lr}
+	pop	{r1-r12, lr}
 	rfeia	sp!
 
 .align 4

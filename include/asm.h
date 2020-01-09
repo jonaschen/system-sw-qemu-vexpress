@@ -9,9 +9,4 @@
  */
 uint32_t *activate(uint32_t *stack);
 
-/*
- * give control back to the Operating System
- */
-void syscall(unsigned int service, void *arg1, void *arg2);
-
 #endif

@@ -43,7 +43,44 @@ Input Path Analysis:
 	   GIC will give Cortex-A9 the interrupt number corresponding to UART.
 	--> Experiment UART-a. Prepare a fifo to get inputs from UART port.
                                Use a kernel task to read and print the fifo buffer.
+	3. But, minishell should execute in user space, we need an interface to get uart buffer data
+	   from userspace through syscall interface.
+	   In Linux, the user space program would do things like:
+		<a> console = open("/dev/ttyXXX")
+			- /dev/ttyXXX is a special file (device node)
+			- there is a special inode structure in the kernel
+		<b> while ((c = read(console)) is not EOL):
+		    	cmd_append(cmd, c)
+			echo(console, c) <--(kernel handles this)
+		<c> resule = cmd_parse_execute(cmd)
 
 
+----------------------------------------------------------------------------------------
+About syscall:
+	1. application (user) --> libc wrapper (user) --> syscall handler (kernel) --> service routine (kernel)
+	2. Need a sequence of operations to add new syscall support
+	   - Add one syscall number
+	   - Add new mapping in sys-call-table
+	   - Implement the service routine
+	3. The wrapper for syscall in user space needs different prototypes for different length of arguments
+	4. Experiment syscall-a. Define function prototypes of syscalls with different number of arguments.
+				 Define a table of syscall service routines.
+				 Define sys_test0 ~ sys_test3 service functions, check arguments in this functions.
+				 Return from swi exception to user space.
+			Note. we will use a syscall table instead of using switch case to improve performance
+
+----------------------------------------------------------------------------------------
+File IO Analysis:
+	1. In Linux, we can create a device file in user space.
+	   For example,
+	   $ mknod -m 666 /dev/tty c 5 0
+	   This command creates a device file, its path is '/dev/tty', and the major number is 5.
+	   The major number tells kernel which driver should handles the file operations of this file.
+	2. For this character device file, kernel would assgin a set of default file operations to it.
+	   When an user program invokes 'open()' to this file, the default operation handles it.
+	3. 
 
 
+----------------------------------------------------------------------------------------
+About TTY:
+About VFS:
