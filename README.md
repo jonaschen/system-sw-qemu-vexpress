@@ -22,20 +22,17 @@ d. System tick & Preemptive
 
 e. MMU enabled (with identity mapping)
 
-# Next
----------
-a. Add some syscall services
+f. Add some syscall services
 
-b. Improve task processing utilities
+g. Improve task processing utilities
 
-c. Enable cache & take use of MMU
+h. Enable cache & take use of MMU
 
-c-1. Use Kernel Virtual Address from offset 0x80000000, so we can take use of TTBR1
+   h-1. Use Kernel Virtual Address from offset 0x80000000, so we can take use of TTBR1
 
-c-2. Simple Page allocator
+   h-2. Simple Page allocator
 
-c-3. User Hello World
-
+   h-3. User Hello World
 
 Licensing
 ---------
