@@ -6,33 +6,54 @@ I have been studing jserv's tutorial materials and code samples for a while.
 To express my thankfulness, I am trying to give some feedback 
 and sharing of my experience.
 
-# Done
-a. Multitasking
+# Project Status
+The project currently implements a basic ARMv7 kernel for QEMU VExpress with the following features:
 
-b. ARM's Generic Timer (Cortex-A9 doesn't have generic timer)
+### Kernel Core
+-   **Multitasking**: Preemptive round-robin scheduler.
+-   **Interrupts**: ARM Generic Interrupt Controller (GIC) support.
+-   **Timer**: ARM SP804 Dual Timer driver for system ticks.
+-   **System Calls**: Basic `SVC` mechanism for user-kernel transition.
 
-	ARM Dual-Timer Module (SP804) Technical Reference Manual
-	http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.ddi0271d/index.html
+### Memory Management
+-   **MMU**: Enabled with paging.
+-   **Virtual Memory**:
+    -   Split kernel (TTBR1) and user (TTBR0) address spaces.
+    -   Kernel runs at `0x80000000` (virtual).
+-   **Allocator**: Basic physical page allocator and `vmalloc`.
 
-c. ARM's Generic Interrupt Controller
+### User Space
+-   **ELF Loader**: Basic support for loading statically linked ELF binaries from memory.
+-   **User Mode**: Tasks run in ARM User Mode.
+-   **Sample Tasks**: Demonstration of context switching and syscalls.
 
-   c-1. Trigger timer interrupt and enter irq mode (commit: fb0be96)
+### Drivers
+-   **UART**: PL011 UART driver for console output.
 
-d. System tick & Preemptive
+# Roadmap
+Future development plans include:
 
-e. MMU enabled (with identity mapping)
+1.  **Memory Management**
+    -   Implement page reclamation (`free_page`).
+    -   Improve ELF loader to support multi-page sections and BSS.
+    -   Implement user-space heap (`malloc`/`free`).
 
-f. Add some syscall services
+2.  **File System**
+    -   Implement a basic file system (e.g., RAMFS).
+    -   Load user programs from the file system instead of raw memory.
 
-g. Improve task processing utilities
+3.  **Process Management**
+    -   Implement `fork`, `exec`, `exit`, and `wait` system calls.
+    -   Add support for task priorities.
+    -   Implement Inter-Process Communication (IPC).
 
-h. Enable cache & take use of MMU
+4.  **I/O & Drivers**
+    -   Interrupt-driven UART driver (Input/Output).
+    -   Implement a basic interactive Shell.
 
-   h-1. Use Kernel Virtual Address from offset 0x80000000, so we can take use of TTBR1
-
-   h-2. Simple Page allocator
-
-   h-3. User Hello World
+5.  **User Space**
+    -   Develop a minimal C library (libc).
+    -   Port more complex applications.
 
 Licensing
 ---------
