@@ -3,3 +3,4 @@
 *.list
 *.swp
 out
+tests/test_loader
