@@ -82,5 +82,9 @@ clean:
 	$(MAKE) clean -C $(DRIVER_DIR)
 	$(MAKE) clean -C $(USER_DIR)
 	$(MAKE) clean -C $(LIB_DIR)
+	$(MAKE) clean -C tests
 
-.PHONY: all qemu clean
+test:
+	$(MAKE) -C tests
+
+.PHONY: all qemu clean test
