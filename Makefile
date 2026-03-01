@@ -45,6 +45,9 @@ out-dir:
 %.o : %.S
 	$(CC) -c $(CFLAGS) $< -o $@
 
+%.o : %.c
+	$(CC) -c $(CFLAGS) $< -o $@
+
 obj-drivers:
 	$(MAKE) -C $(DRIVER_DIR)
 
@@ -63,7 +66,7 @@ $(IMAGE): kernel.ld $(OBJS) out-dir
 
 # convert 0x10100 to decimal: `echo "ibase=16; 10100" | bc`
 
-test:
+test: out-dir
 	$(MAKE) -C tests
 
 qemu: $(IMAGE)
@@ -88,10 +91,3 @@ clean:
 	$(MAKE) clean -C tests
 
 .PHONY: all qemu clean test
-
-
-# Test target for unit tests
-test: out-dir
-	gcc -I$(INCLUDE) -I. -g -Wall tests/test_loader.c -o $(OUT)/test_loader
-	@echo "Running tests..."
-	@$(OUT)/test_loader
