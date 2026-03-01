@@ -83,4 +83,11 @@ clean:
 	$(MAKE) clean -C $(USER_DIR)
 	$(MAKE) clean -C $(LIB_DIR)
 
-.PHONY: all qemu clean
+.PHONY: all qemu clean test
+
+
+# Test target for unit tests
+test: out-dir
+	gcc -I$(INCLUDE) -I. -g -Wall tests/test_loader.c -o $(OUT)/test_loader
+	@echo "Running tests..."
+	@$(OUT)/test_loader
