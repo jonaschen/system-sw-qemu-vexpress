@@ -63,6 +63,9 @@ $(IMAGE): kernel.ld $(OBJS) out-dir
 
 # convert 0x10100 to decimal: `echo "ibase=16; 10100" | bc`
 
+test:
+	$(MAKE) -C tests
+
 qemu: $(IMAGE)
 	@echo "Press Ctrl-A and then X to exit QEMU"
 	@echo
@@ -82,5 +85,6 @@ clean:
 	$(MAKE) clean -C $(DRIVER_DIR)
 	$(MAKE) clean -C $(USER_DIR)
 	$(MAKE) clean -C $(LIB_DIR)
+	$(MAKE) clean -C tests
 
-.PHONY: all qemu clean
+.PHONY: all test qemu clean
