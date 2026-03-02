@@ -16,7 +16,7 @@ void irq_top_handler(uint32_t irq_num)
 	struct irq_handler_desc *desc;
 
 	/* assert(irq_num < MAX_IRQ_NUM) */
-	if (irq_num > MAX_IRQ_NUM) {
+	if (irq_num >= MAX_IRQ_NUM) {
 		puts("irq number error.\n");
 		while (1);
 	}
@@ -33,7 +33,7 @@ int irq_register_handler(uint32_t irq_num, void (*handler)(void *), void *arg)
 {
 	struct irq_handler_desc *desc;
 
-	if (irq_num > MAX_IRQ_NUM)
+	if (irq_num >= MAX_IRQ_NUM)
 		return -1;
 
 	desc = &irq_handlers[irq_num];

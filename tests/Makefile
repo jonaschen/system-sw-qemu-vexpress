@@ -1,28 +1,37 @@
 CC = gcc
-CFLAGS = -Wall -g -I../include -DUNIT_TEST
+CFLAGS = -Wall -I../include -O0 -g
 
-# Disable built-in function mismatch warnings for unit tests since standard C functions are re-implemented in the kernel
-CFLAGS += -Wno-builtin-declaration-mismatch
+# Test executables
+TEST_IRQ = test_irq
+TEST_LOADER = test_loader
 
-SRCS = test_loader.c ../loader.c
-# Put the compiled object files in the current tests directory
-OBJS = test_loader.o loader.o
-TARGET = test_loader
+# Source files for each test
+TEST_IRQ_SRCS = test_irq.c ../irq.c
+TEST_LOADER_SRCS = test_loader.c 
 
-# Mocks for testing loader.c
-CFLAGS += -Dputs=mock_puts -Dallocate_page=mock_allocate_page -Dmap_pages=mock_map_pages -D_sfirmware=mock_sfirmware
+TARGETS = $(TEST_IRQ) $(TEST_LOADER)
 
-all: $(TARGET)
-	./$(TARGET)
+all: $(TARGETS) run
 
-$(TARGET): $(OBJS)
+# test_irq needs mock_puts defined via compiler flag
+$(TEST_IRQ): $(TEST_IRQ_SRCS)
+	$(CC) $(CFLAGS) -Dputs=mock_puts -o $@ $^
+
+# test_loader defines its own puts mock in the source file
+$(TEST_LOADER): $(TEST_LOADER_SRCS)
 	$(CC) $(CFLAGS) -o $@ $^
 
-test_loader.o: test_loader.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+run: $(TARGETS)
+	@echo "Running IRQ tests..."
+	./$(TEST_IRQ)
+	@echo ""
+	@echo "Running loader tests..."
+	./$(TEST_LOADER)
+	@echo ""
+	@echo "All tests completed successfully!"
 
-loader.o: ../loader.c
-	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-	rm -f $(OBJS) $(TARGET)
+	rm -f $(TARGETS)
+
+.PHONY: all run clean
