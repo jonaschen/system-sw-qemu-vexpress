@@ -148,6 +148,115 @@ int test_allocate_exact_all_memory() {
     return 0;
 }
 
+int test_free_page_basic() {
+    mm_init();
+
+    uint32_t pfn = allocate_page(1);
+    if (pfn == ~0U) {
+        printf("FAIL: test_free_page_basic: allocation failed\n");
+        return 1;
+    }
+
+    free_page(pfn, 1);
+
+    /* Verify flag was set back to available */
+    if (!(page_flags[pfn - min_pfn] & PAGE_FLAG_AVAILABLE)) {
+        printf("FAIL: test_free_page_basic: flag not reset after free\n");
+        return 1;
+    }
+
+    /* Verify we can re-allocate the same page */
+    uint32_t pfn2 = allocate_page(1);
+    if (pfn2 != pfn) {
+        printf("FAIL: test_free_page_basic: re-allocation failed or got different page, expected %x got %x\n", pfn, pfn2);
+        return 1;
+    }
+
+    printf("PASS: test_free_page_basic\n");
+    return 0;
+}
+
+int test_free_multiple_pages() {
+    mm_init();
+
+    uint32_t pfn = allocate_page(10);
+    if (pfn == ~0U) {
+        printf("FAIL: test_free_multiple_pages: allocation failed\n");
+        return 1;
+    }
+
+    free_page(pfn, 10);
+
+    for (int i = 0; i < 10; i++) {
+        if (!(page_flags[pfn - min_pfn + i] & PAGE_FLAG_AVAILABLE)) {
+            printf("FAIL: test_free_multiple_pages: flag not reset for page %d\n", i);
+            return 1;
+        }
+    }
+
+    /* Re-allocate 10 pages */
+    uint32_t pfn2 = allocate_page(10);
+    if (pfn2 != pfn) {
+        printf("FAIL: test_free_multiple_pages: re-allocation failed or got different page\n");
+        return 1;
+    }
+
+    printf("PASS: test_free_multiple_pages\n");
+    return 0;
+}
+
+int test_free_page_out_of_bounds() {
+    mm_init();
+
+    /* These should not crash or corrupt other memory */
+    free_page(min_pfn - 1, 1);
+    free_page(max_pfn, 1);
+    free_page(min_pfn, PHYSICAL_PAGE_FRAMES + 1);
+
+    printf("PASS: test_free_page_out_of_bounds (no crash)\n");
+    return 0;
+}
+
+int test_mm_stress() {
+    mm_init();
+    uint32_t pfns[100];
+    int sizes[100];
+    int count = 0;
+
+    printf("Starting mm stress test...\n");
+
+    /* Random-ish allocations */
+    for (int i = 0; i < 100; i++) {
+        sizes[i] = (i % 10) + 1;
+        pfns[i] = allocate_page(sizes[i]);
+        if (pfns[i] != ~0U) {
+            count++;
+        }
+    }
+
+    /* Free some of them */
+    for (int i = 0; i < 100; i += 2) {
+        if (pfns[i] != ~0U) {
+            free_page(pfns[i], sizes[i]);
+            pfns[i] = ~0U;
+            count--;
+        }
+    }
+
+    /* Allocate again */
+    for (int i = 0; i < 50; i++) {
+        int size = (i % 5) + 1;
+        uint32_t pfn = allocate_page(size);
+        if (pfn == ~0U) {
+            printf("FAIL: test_mm_stress: allocation failed during stress\n");
+            return 1;
+        }
+    }
+
+    printf("PASS: test_mm_stress\n");
+    return 0;
+}
+
 int main() {
     int fails = 0;
     printf("Running mm tests...\n");
@@ -156,5 +265,9 @@ int main() {
     fails += test_allocate_out_of_memory();
     fails += test_allocate_fragmented();
     fails += test_allocate_exact_all_memory();
+    fails += test_free_page_basic();
+    fails += test_free_multiple_pages();
+    fails += test_free_page_out_of_bounds();
+    fails += test_mm_stress();
     return fails > 0 ? 1 : 0;
 }

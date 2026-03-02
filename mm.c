@@ -161,6 +161,24 @@ uint32_t allocate_page(int count)
 	return start;
 }
 
+void free_page(uint32_t pfn, int count)
+{
+	int i;
+
+	if (pfn < min_pfn || pfn + count > max_pfn) {
+		puts("free_page: out of bounds\n");
+		return;
+	}
+
+	for (i = 0; i < count; i++) {
+		if (page_flags[pfn - min_pfn + i] & PAGE_FLAG_AVAILABLE) {
+			puts("free_page: double free detected\n");
+			continue;
+		}
+		page_flags[pfn - min_pfn + i] |= PAGE_FLAG_AVAILABLE;
+	}
+}
+
 void mm_init(void)
 {
 	uint32_t pfn;
