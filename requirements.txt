@@ -1,0 +1,8 @@
+# System dependencies required to build and run the project
+# This project uses a bare-metal C environment, so these are OS-level packages.
+# To install on Debian/Ubuntu, run:
+# sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi bc qemu-system-arm
+
+gcc-arm-none-eabi
+bc
+qemu-system-arm
