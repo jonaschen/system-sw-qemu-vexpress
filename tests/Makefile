@@ -7,7 +7,7 @@ TEST_LOADER = test_loader
 
 # Source files for each test
 TEST_IRQ_SRCS = test_irq.c ../irq.c
-TEST_LOADER_SRCS = test_loader.c
+TEST_LOADER_SRCS = test_loader.c 
 
 TARGETS = $(TEST_IRQ) $(TEST_LOADER)
 
