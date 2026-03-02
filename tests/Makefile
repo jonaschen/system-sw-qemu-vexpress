@@ -9,7 +9,7 @@ TEST_MM = test_mm
 # Source files for each test
 TEST_IRQ_SRCS = test_irq.c ../irq.c
 TEST_LOADER_SRCS = test_loader.c 
-TEST_MM_SRCS = test_mm.c ../mm.c
+TEST_MM_SRCS = test_mm.c 
 
 TARGETS = $(TEST_IRQ) $(TEST_LOADER) $(TEST_MM)
 
@@ -32,6 +32,9 @@ run: $(TARGETS)
 	@echo ""
 	@echo "Running loader tests..."
 	./$(TEST_LOADER)
+	@echo ""
+	@echo "Running mm tests..."
+	./$(TEST_MM)
 	@echo ""
 	@echo "All tests completed successfully!"
 
