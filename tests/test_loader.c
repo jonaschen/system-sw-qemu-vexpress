@@ -3,15 +3,6 @@
 #include <string.h>
 #include <assert.h>
 
-//uint32_t _sfirmware = 0;
-//// Use standard library for I/O in the mock
-//int loader_puts(const char *s) {
-//    return fputs(s, stdout) != EOF && fputc('\n', stdout) != EOF ? 0 : -1;
-//}
-//
-//uint32_t allocate_page(int n) { return 0; }
-//void *map_pages(void *addr, uint32_t start_pfn, uint32_t count) { return 0; }
-
 
 /* Mock environment */
 /* Rename functions to avoid conflicts */
@@ -139,8 +130,50 @@ void test_memcmp() {
     printf("All memcmp tests passed!\n");
 }
 
+void test_memcpy_basic() {
+    char src[] = "Hello World";
+    char dst[20] = {0};
+
+    my_memcpy(dst, src, 12); // "Hello World" + \0
+
+    for (int i=0; i<12; i++) {
+        assert(src[i] == dst[i]);
+    }
+    printf("test_memcpy_basic passed\n");
+}
+
+void test_memcpy_empty() {
+    char src[] = "Hello World";
+    char dst[20] = "Overwrite me";
+
+    my_memcpy(dst, src, 0);
+
+    char expected[] = "Overwrite me";
+    for (int i=0; i<12; i++) {
+        assert(expected[i] == dst[i]);
+    }
+    printf("test_memcpy_empty passed\n");
+}
+
+void test_memcpy_partial() {
+    char src[] = "Hello World";
+    char dst[20] = {0};
+
+    my_memcpy(dst, src, 5);
+
+    char expected[] = "Hello";
+    for (int i=0; i<5; i++) {
+        assert(expected[i] == dst[i]);
+    }
+    assert(dst[5] == 0);
+    printf("test_memcpy_partial passed\n");
+}
+
 int main() {
     printf("Running memset tests...\n");
+    test_memcpy_basic();
+    test_memcpy_empty();
+    test_memcpy_partial();
     test_memset_zero();
     test_memset_value();
     test_memset_partial();
