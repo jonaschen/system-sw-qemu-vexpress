@@ -172,6 +172,41 @@ idle:
 	while (1);
 }
 
+static void dummy_task(void)
+{
+	/* empty task for testing */
+}
+
+static void stack_init_test(void)
+{
+	int i, result = 0;
+	struct task_cb tcb;
+	uint32_t dummy_stack[16];
+
+	tcb.stack = dummy_stack;
+	initialize_stack(&tcb, dummy_task);
+
+	for (i = 0; i < 14; i++) {
+		if (dummy_stack[i] != ((i << 8) | i)) {
+			result = -1;
+			break;
+		}
+	}
+
+	if (dummy_stack[14] != (uint32_t) dummy_task)
+		result = -1;
+
+	if (dummy_stack[15] != USER_MODE)
+		result = -1;
+
+	if (result) {
+		puts("stack init test fail\n");
+		while (1);
+	} else {
+		puts("stack init test OK\n");
+	}
+}
+
 static void page_allocate_test(void)
 {
 	int result = 0, cnt = 1, i;
@@ -209,6 +244,7 @@ void init(void)
 
 	mm_init();
 
+	stack_init_test();
 	page_allocate_test();
 
 	gic_init();
