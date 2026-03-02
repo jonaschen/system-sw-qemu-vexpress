@@ -138,7 +138,7 @@ uint32_t allocate_page(int count)
 {
 	uint32_t start, pfn, found;
 
-	for (start = min_pfn; start < max_pfn - count; start++) {
+	for (start = min_pfn; start <= max_pfn - count; start++) {
 		found = 1;
 		for (pfn = start; pfn < start + count; pfn++) {
 			if (!(page_flags[pfn - min_pfn] & PAGE_FLAG_AVAILABLE)) {
