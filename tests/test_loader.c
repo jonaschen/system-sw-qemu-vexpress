@@ -2,11 +2,22 @@
 #include <stdint.h>
 #include <string.h>
 
+uint32_t _sfirmware = 0;
+// Use standard library for I/O in the mock
+int loader_puts(const char *s) {
+    return fputs(s, stdout) != EOF && fputc('\n', stdout) != EOF ? 0 : -1;
+}
+
+uint32_t allocate_page(int n) { return 0; }
+void *map_pages(void *addr, uint32_t start_pfn, uint32_t count) { return 0; }
+
+
 /* Mock environment */
 /* Rename functions to avoid conflicts */
 #define memset my_memset
 #define memcpy my_memcpy
 #define memcmp my_memcmp
+#define puts loader_puts
 
 /* Mock functions required by loader.c */
 int puts(const char *str) {
@@ -33,6 +44,7 @@ uint32_t _sfirmware;
 #undef memset
 #undef memcpy
 #undef memcmp
+#undef puts
 
 /* Test functions */
 void test_memset_zero() {
@@ -99,10 +111,39 @@ void test_memset_partial() {
     printf("PASS: test_memset_partial\n");
 }
 
+void test_memcmp() {
+    printf("Running memcmp tests...\n");
+
+    // Exact match
+    assert(loader_memcmp("hello", "hello", 5) == 0);
+    assert(loader_memcmp("", "", 0) == 0);
+
+    // Mismatch at start
+    assert(loader_memcmp("hello", "yello", 5) == -1);
+
+    // Mismatch at end
+    assert(loader_memcmp("hello", "hella", 5) == -1);
+
+    // Mismatch in middle
+    assert(loader_memcmp("hello", "heXlo", 5) == -1);
+
+    // Partial match (prefix)
+    assert(loader_memcmp("hello", "help", 3) == 0);
+    assert(loader_memcmp("hello", "help", 4) == -1);
+
+    // Testing unaligned and different length
+    assert(loader_memcmp("abc", "abd", 3) == -1);
+    assert(loader_memcmp("abc", "abc", 3) == 0);
+
+    printf("All memcmp tests passed!\n");
+}
+
 int main() {
     printf("Running memset tests...\n");
     test_memset_zero();
     test_memset_value();
     test_memset_partial();
+    test_memcmp();
+
     return 0;
 }

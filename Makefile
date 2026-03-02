@@ -45,6 +45,9 @@ out-dir:
 %.o : %.S
 	$(CC) -c $(CFLAGS) $< -o $@
 
+%.o : %.c
+	$(CC) -c $(CFLAGS) $< -o $@
+
 obj-drivers:
 	$(MAKE) -C $(DRIVER_DIR)
 
@@ -62,6 +65,9 @@ $(IMAGE): kernel.ld $(OBJS) out-dir
 	dd if=$(USER_DIR)/out/hello.elf of=$(OUT)/test.elf conv=notrunc bs=1 seek=`echo "ibase=16; 10100" | bc`
 
 # convert 0x10100 to decimal: `echo "ibase=16; 10100" | bc`
+
+test: out-dir
+	$(MAKE) -C tests
 
 qemu: $(IMAGE)
 	@echo "Press Ctrl-A and then X to exit QEMU"
@@ -82,5 +88,6 @@ clean:
 	$(MAKE) clean -C $(DRIVER_DIR)
 	$(MAKE) clean -C $(USER_DIR)
 	$(MAKE) clean -C $(LIB_DIR)
+	$(MAKE) clean -C tests
 
-.PHONY: all qemu clean
+.PHONY: all qemu clean test

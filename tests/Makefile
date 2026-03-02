@@ -1,11 +1,37 @@
 CC = gcc
-CFLAGS = -I../include -Wall -g
+CFLAGS = -Wall -I../include -O0 -g
 
-test: test_loader
-	./test_loader
+# Test executables
+TEST_IRQ = test_irq
+TEST_LOADER = test_loader
 
-test_loader: test_loader.c ../loader.c
-	$(CC) $(CFLAGS) -o $@ $<
+# Source files for each test
+TEST_IRQ_SRCS = test_irq.c ../irq.c
+TEST_LOADER_SRCS = test_loader.c
+
+TARGETS = $(TEST_IRQ) $(TEST_LOADER)
+
+all: $(TARGETS) run
+
+# test_irq needs mock_puts defined via compiler flag
+$(TEST_IRQ): $(TEST_IRQ_SRCS)
+	$(CC) $(CFLAGS) -Dputs=mock_puts -o $@ $^
+
+# test_loader defines its own puts mock in the source file
+$(TEST_LOADER): $(TEST_LOADER_SRCS)
+	$(CC) $(CFLAGS) -o $@ $^
+
+run: $(TARGETS)
+	@echo "Running IRQ tests..."
+	./$(TEST_IRQ)
+	@echo ""
+	@echo "Running loader tests..."
+	./$(TEST_LOADER)
+	@echo ""
+	@echo "All tests completed successfully!"
+
 
 clean:
-	rm -f test_loader
+	rm -f $(TARGETS)
+
+.PHONY: all run clean

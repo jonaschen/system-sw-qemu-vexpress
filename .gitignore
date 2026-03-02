@@ -4,3 +4,4 @@
 *.swp
 out
 tests/test_loader
+tests/test_irq
